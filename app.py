@@ -222,7 +222,7 @@ async def call_ollama_merge(existing: dict, new_text: str) -> str:
     return "".join(collected)
 
 
-@app.post("/itinerary/api/update")
+@app.post("/api/update")
 async def update_itinerary(request: Request):
     body = await request.json()
     text = body.get("text", "").strip()
@@ -275,22 +275,17 @@ async def update_itinerary(request: Request):
 
 
 @app.get("/")
-async def root_redirect():
-    return RedirectResponse(url="/itinerary")
-
-
-@app.get("/itinerary")
 async def root():
     return FileResponse("static/index.html")
 
 
-@app.get("/itinerary/api/config")
+@app.get("/api/config")
 async def get_config():
     """Tell the frontend which backend is active."""
     return {"backend": BACKEND, "model": os.getenv("OLLAMA_MODEL", "qwen2.5:7b") if BACKEND == "ollama" else "claude-opus-4-6"}
 
 
-@app.post("/itinerary/api/generate")
+@app.post("/api/generate")
 async def generate_itinerary(request: Request):
     body = await request.json()
     text = body.get("text", "").strip()
@@ -341,7 +336,7 @@ async def generate_itinerary(request: Request):
     )
 
 
-app.mount("/itinerary/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn

@@ -519,7 +519,7 @@ async function generateItinerary() {
   hideError();
 
   try {
-    const res = await fetch('/itinerary/api/generate', {
+    const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
@@ -547,7 +547,7 @@ async function addToItinerary() {
   hideError();
 
   try {
-    const res = await fetch('/itinerary/api/update', {
+    const res = await fetch('/api/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, existing: currentItinerary }),
@@ -1084,7 +1084,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Escape') closeModal();
   });
   // Show active backend in header
-  fetch('/itinerary/api/config').then(r => r.json()).then(c => {
+  fetch('/api/config').then(r => r.json()).then(c => {
     const badge = document.getElementById('backend-badge');
     if (c.backend === 'ollama') {
       badge.textContent = `🖥️ Local model: ${c.model}`;
