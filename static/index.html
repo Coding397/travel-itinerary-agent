@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Travel Itinerary Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f1f5f9;
+      color: #0f172a;
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app { max-width: 860px; margin: 0 auto; padding: 1rem; }
+
+    /* ── Header ── */
+    header { text-align: center; padding: 2rem 0 1.5rem; }
+    header h1 { font-size: 1.8rem; font-weight: 800; color: #1e40af; letter-spacing: -0.5px; }
+    header p { color: #64748b; margin-top: 0.3rem; font-size: 0.95rem; }
+
+    /* ── Cards ── */
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
+    }
+
+    /* ── Input section ── */
+    .input-section label {
+      display: block;
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #374151;
+      margin-bottom: 0.5rem;
+    }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      padding: 0.75rem;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.875rem;
+      resize: vertical;
+      transition: border-color 0.2s;
+      color: #0f172a;
+    }
+    textarea:focus { outline: none; border-color: #2563eb; }
+    textarea::placeholder { color: #94a3b8; }
+    .hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-primary { background: #2563eb; color: white; width: 100%; margin-top: 0.75rem; font-size: 0.95rem; padding: 0.75rem; }
+    .btn-primary:not(:disabled):hover { background: #1d4ed8; }
+    .btn-secondary { background: #f1f5f9; color: #374151; }
+    .btn-secondary:not(:disabled):hover { background: #e2e8f0; }
+    .btn-success { background: #dcfce7; color: #15803d; }
+    .btn-success:not(:disabled):hover { background: #bbf7d0; }
+    .btn-danger { background: #fee2e2; color: #dc2626; }
+    .btn-danger:not(:disabled):hover { background: #fecaca; }
+    .btn-xs { padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; font-family: inherit; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      display: none;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #eff6ff;
+      border-radius: 10px;
+      color: #1d4ed8;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .status-bar.show { display: flex; }
+    .spinner {
+      width: 18px; height: 18px; flex-shrink: 0;
+      border: 2.5px solid #bfdbfe;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Error bar ── */
+    .error-bar {
+      display: none;
+      padding: 0.75rem 1rem;
+      background: #fef2f2;
+      border-radius: 10px;
+      color: #dc2626;
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+    }
+    .error-bar.show { display: block; }
+
+    /* ── Itinerary section ── */
+    #itinerary-section { display: none; }
+    #itinerary-section.show { display: block; }
+
+    .trip-header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white;
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .trip-name { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.3px; }
+    .trip-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem 1.5rem;
+      margin-top: 0.5rem;
+      opacity: 0.88;
+      font-size: 0.875rem;
+    }
+
+    /* ── Actions bar ── */
+    .actions-bar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1rem;
+    }
+    .actions-bar .btn { flex: 1; min-width: 100px; }
+
+    /* ── Important notes ── */
+    .notes-card { display: none; }
+    .notes-card h3 { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.6rem; color: #374151; }
+    .notes-list { list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
+    .notes-list li {
+      font-size: 0.85rem;
+      color: #374151;
+      padding-left: 1rem;
+      position: relative;
+    }
+    .notes-list li::before { content: '•'; position: absolute; left: 0; color: #2563eb; }
+
+    /* ── Day cards ── */
+    .day-card { border-radius: 14px; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .day-card-header {
+      background: white;
+      padding: 1rem 1.25rem 0.75rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .day-badge {
+      background: #2563eb;
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 800;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .day-info { flex: 1; min-width: 0; }
+    .day-date { font-weight: 700; font-size: 0.95rem; }
+    .day-location { color: #2563eb; font-size: 0.825rem; margin-top: 0.1rem; font-weight: 500; }
+    .day-summary { color: #64748b; font-size: 0.8rem; margin-top: 0.2rem; }
+    .day-card-body { background: white; padding: 0.75rem 1.25rem 1rem; }
+
+    /* ── Events ── */
+    .events { display: flex; flex-direction: column; gap: 0.6rem; }
+    .event {
+      display: flex;
+      gap: 0.6rem;
+      align-items: flex-start;
+    }
+    .event-time-col {
+      width: 3.25rem;
+      flex-shrink: 0;
+      text-align: right;
+      padding-top: 0.55rem;
+    }
+    .event-time { font-size: 0.78rem; font-weight: 700; color: #374151; line-height: 1.2; }
+    .event-time-end { font-size: 0.7rem; color: #94a3b8; line-height: 1.2; }
+    .event-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--event-color, #6b7280);
+      flex-shrink: 0;
+      margin-top: 0.65rem;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--event-color, #6b7280) 18%, transparent);
+    }
+    .event-card {
+      flex: 1;
+      min-width: 0;
+      background: var(--event-bg, #f9fafb);
+      border-left: 3px solid var(--event-color, #6b7280);
+      border-radius: 0 8px 8px 0;
+      padding: 0.5rem 0.75rem;
+    }
+    .event-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--event-color, #6b7280);
+      margin-bottom: 0.15rem;
+    }
+    .event-title { font-weight: 700; font-size: 0.875rem; color: #0f172a; }
+    .event-details { font-size: 0.8rem; color: #4b5563; margin-top: 0.2rem; white-space: pre-wrap; word-break: break-word; }
+    .event-confirmation { font-size: 0.75rem; color: #6b7280; margin-top: 0.2rem; font-family: 'SF Mono', 'Fira Code', monospace; }
+    .event-notes { font-size: 0.75rem; color: #0369a1; margin-top: 0.2rem; }
+    .no-events { color: #94a3b8; font-size: 0.82rem; text-align: center; padding: 0.75rem 0; }
+
+    /* ── Saved trips ── */
+    .saved-section h2 { font-size: 0.9rem; font-weight: 700; color: #374151; margin-bottom: 0.75rem; }
+    .saved-empty { color: #94a3b8; font-size: 0.85rem; text-align: center; padding: 1rem 0; }
+    .saved-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .saved-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      transition: background 0.1s;
+    }
+    .saved-item:hover { background: #f8fafc; }
+    .saved-item-info { flex: 1; min-width: 0; }
+    .saved-item-name {
+      font-weight: 600;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .saved-item-meta { font-size: 0.73rem; color: #94a3b8; margin-top: 0.05rem; }
+    .saved-item-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
+
+    footer {
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 0.75rem;
+      padding: 2rem 0 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.4rem; }
+      .trip-name { font-size: 1.15rem; }
+      .event-time-col { width: 2.75rem; }
+      .actions-bar .btn { font-size: 0.8rem; padding: 0.6rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>✈️ Travel Itinerary Generator</h1>
+    <p>Paste any travel info — flights, hotels, tours — and get a clean day-by-day plan.</p>
+  </header>
+
+  <!-- Input -->
+  <div class="card input-section">
+    <label for="travel-input">Your travel information</label>
+    <textarea
+      id="travel-input"
+      placeholder="Paste anything here: flight confirmation emails, hotel booking details, tour reservations, notes — any format, any source, all at once.
+
+Example:
+Flight BA456 LHR to CDG 14 Mar, depart 09:30, booking ref XY123
+Hotel Le Marais Paris, check in 14th March, 3 nights, conf #HT789
+Eiffel Tower skip-the-line tour 15 Mar at 14:00, meet at south pillar"
+    ></textarea>
+    <p class="hint">Tip: Ctrl+Enter (or Cmd+Enter) to generate</p>
+    <button id="generate-btn" class="btn btn-primary" onclick="generateItinerary()">
+      Generate Itinerary
+    </button>
+  </div>
+
+  <!-- Status / Error -->
+  <div id="status-bar" class="status-bar">
+    <div class="spinner"></div>
+    <span id="status-message">Analyzing your travel information...</span>
+  </div>
+  <div id="error-bar" class="error-bar"></div>
+
+  <!-- Itinerary output -->
+  <div id="itinerary-section">
+    <div class="trip-header" id="trip-header"></div>
+
+    <div class="actions-bar">
+      <button id="save-btn" class="btn btn-success" onclick="saveCurrentItinerary()">💾 Save</button>
+      <button class="btn btn-secondary" onclick="downloadAsHTML()">📥 Download</button>
+      <button class="btn btn-danger" onclick="clearItinerary()">✕ Clear</button>
+    </div>
+
+    <div id="notes-card" class="card notes-card">
+      <h3>📌 Important Notes</h3>
+      <ul id="notes-list" class="notes-list"></ul>
+    </div>
+
+    <div id="days-container"></div>
+  </div>
+
+  <!-- Saved trips -->
+  <div class="card saved-section" style="margin-top: 0.5rem;">
+    <h2>📁 My Saved Trips</h2>
+    <div id="saved-list"><div class="saved-empty">No saved trips yet.</div></div>
+  </div>
+
+  <footer>Travel Itinerary Generator · Powered by Claude</footer>
+
+</div>
+<script>
+// ── Event type configuration ──────────────────────────────────────────────────
+const EVENT_CFG = {
+  flight:        { icon: '✈️',  color: '#ea580c', bg: '#fff7ed',  label: 'Flight'      },
+  hotel_checkin: { icon: '🏨',  color: '#7c3aed', bg: '#faf5ff',  label: 'Check-in'    },
+  hotel_checkout:{ icon: '🏨',  color: '#7c3aed', bg: '#faf5ff',  label: 'Check-out'   },
+  train:         { icon: '🚂',  color: '#0891b2', bg: '#ecfeff',  label: 'Train'       },
+  bus:           { icon: '🚌',  color: '#0891b2', bg: '#ecfeff',  label: 'Bus'         },
+  ferry:         { icon: '⛴️',  color: '#0891b2', bg: '#ecfeff',  label: 'Ferry'       },
+  car_rental:    { icon: '🚗',  color: '#4b5563', bg: '#f9fafb',  label: 'Car Rental'  },
+  car_return:    { icon: '🚗',  color: '#4b5563', bg: '#f9fafb',  label: 'Car Return'  },
+  activity:      { icon: '🎯',  color: '#059669', bg: '#ecfdf5',  label: 'Activity'    },
+  tour:          { icon: '🗺️',  color: '#059669', bg: '#ecfdf5',  label: 'Tour'        },
+  restaurant:    { icon: '🍽️',  color: '#dc2626', bg: '#fef2f2',  label: 'Restaurant'  },
+  meeting:       { icon: '📋',  color: '#2563eb', bg: '#eff6ff',  label: 'Meeting'     },
+  other:         { icon: '📍',  color: '#6b7280', bg: '#f9fafb',  label: 'Other'       },
+};
+
+function cfg(type) { return EVENT_CFG[type] || EVENT_CFG.other; }
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let currentItinerary = null;
+
+// ── Generate ──────────────────────────────────────────────────────────────────
+async function generateItinerary() {
+  const text = document.getElementById('travel-input').value.trim();
+  if (!text) { showError('Please paste your travel information above.'); return; }
+
+  setLoading(true);
+  hideError();
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Server error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6);
+        if (payload === '[DONE]') break;
+        try {
+          const ev = JSON.parse(payload);
+          if (ev.type === 'status')   updateStatus(ev.message);
+          if (ev.type === 'error')    showError(ev.message);
+          if (ev.type === 'complete') { currentItinerary = ev.data; renderItinerary(ev.data); }
+        } catch { /* ignore partial JSON */ }
+      }
+    }
+  } catch (err) {
+    showError(err.message || 'Failed to generate itinerary. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('generate-btn');
+  const bar = document.getElementById('status-bar');
+  btn.disabled = on;
+  btn.textContent = on ? 'Generating…' : 'Generate Itinerary';
+  bar.classList.toggle('show', on);
+}
+
+function updateStatus(msg) { document.getElementById('status-message').textContent = msg; }
+function showError(msg)    { const b = document.getElementById('error-bar'); b.textContent = msg; b.classList.add('show'); }
+function hideError()       { document.getElementById('error-bar').classList.remove('show'); }
+
+// ── Render itinerary ──────────────────────────────────────────────────────────
+function renderItinerary(data) {
+  const nights = daysBetween(data.start_date, data.end_date);
+  document.getElementById('trip-header').innerHTML = `
+    <div class="trip-name">${esc(data.trip_name || 'My Trip')}</div>
+    <div class="trip-meta">
+      <span>📅 ${fmtDate(data.start_date)} – ${fmtDate(data.end_date)}</span>
+      <span>🌙 ${nights} night${nights !== 1 ? 's' : ''}</span>
+      ${data.days ? `<span>📋 ${data.days.length} day${data.days.length !== 1 ? 's' : ''}</span>` : ''}
+    </div>`;
+
+  // Important notes
+  const notesCard = document.getElementById('notes-card');
+  const notesList = document.getElementById('notes-list');
+  const notes = data.important_notes || [];
+  if (notes.length > 0) {
+    notesList.innerHTML = notes.map(n => `<li>${esc(n)}</li>`).join('');
+    notesCard.style.display = 'block';
+    notesCard.classList.add('card');
+  } else {
+    notesCard.style.display = 'none';
+  }
+
+  // Days
+  const container = document.getElementById('days-container');
+  container.innerHTML = '';
+  (data.days || []).forEach((day, i) => container.appendChild(buildDayCard(day, i)));
+
+  document.getElementById('itinerary-section').classList.add('show');
+  document.getElementById('itinerary-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function buildDayCard(day, idx) {
+  const el = document.createElement('div');
+  el.className = 'day-card';
+
+  const dateStr   = day.date ? fmtDate(day.date) : `Day ${day.day_number || idx + 1}`;
+  const weekday   = day.date ? fmtWeekday(day.date) : '';
+  const dayNum    = day.day_number || idx + 1;
+  const events    = (day.events || []);
+
+  el.innerHTML = `
+    <div class="day-card-header">
+      <div class="day-badge">Day ${dayNum}</div>
+      <div class="day-info">
+        <div class="day-date">${weekday ? weekday + ', ' : ''}${dateStr}</div>
+        ${day.location ? `<div class="day-location">📍 ${esc(day.location)}</div>` : ''}
+        ${day.summary  ? `<div class="day-summary">${esc(day.summary)}</div>`      : ''}
+      </div>
+    </div>
+    <div class="day-card-body">
+      <div class="events">
+        ${events.length === 0
+          ? '<div class="no-events">No events scheduled</div>'
+          : events.map(buildEventHTML).join('')}
+      </div>
+    </div>`;
+  return el;
+}
+
+function buildEventHTML(ev) {
+  const c = cfg(ev.type);
+  const hasTime    = ev.time    && ev.time    !== 'null';
+  const hasEndTime = ev.end_time && ev.end_time !== 'null';
+
+  return `
+    <div class="event" style="--event-color:${c.color};--event-bg:${c.bg}">
+      <div class="event-time-col">
+        ${hasTime    ? `<div class="event-time">${esc(ev.time)}</div>`         : ''}
+        ${hasEndTime ? `<div class="event-time-end">${esc(ev.end_time)}</div>` : ''}
+      </div>
+      <div class="event-dot"></div>
+      <div class="event-card">
+        <div class="event-badge">${c.icon} ${c.label}</div>
+        <div class="event-title">${esc(ev.title || '')}</div>
+        ${ev.details      ? `<div class="event-details">${esc(ev.details)}</div>`                          : ''}
+        ${ev.confirmation ? `<div class="event-confirmation">🔖 Ref: ${esc(ev.confirmation)}</div>`        : ''}
+        ${ev.notes        ? `<div class="event-notes">💡 ${esc(ev.notes)}</div>`                           : ''}
+      </div>
+    </div>`;
+}
+
+function clearItinerary() {
+  currentItinerary = null;
+  document.getElementById('itinerary-section').classList.remove('show');
+  document.getElementById('travel-input').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── localStorage ──────────────────────────────────────────────────────────────
+const STORE_KEY = 'travel_itineraries_v1';
+
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveCurrentItinerary() {
+  if (!currentItinerary) return;
+  const name = prompt('Name this trip:', currentItinerary.trip_name || 'My Trip');
+  if (name === null) return;
+
+  const saved = getSaved();
+  saved.unshift({ id: Date.now().toString(), name: name || 'Untitled', savedAt: new Date().toISOString(), data: currentItinerary });
+  localStorage.setItem(STORE_KEY, JSON.stringify(saved));
+  renderSavedList();
+
+  const btn = document.getElementById('save-btn');
+  btn.textContent = '✓ Saved!';
+  setTimeout(() => { btn.textContent = '💾 Save'; }, 2000);
+}
+
+function loadSaved(id) {
+  const entry = getSaved().find(s => s.id === id);
+  if (!entry) return;
+  currentItinerary = entry.data;
+  renderItinerary(entry.data);
+}
+
+function deleteSaved(id) {
+  if (!confirm('Delete this saved itinerary?')) return;
+  localStorage.setItem(STORE_KEY, JSON.stringify(getSaved().filter(s => s.id !== id)));
+  renderSavedList();
+}
+
+function renderSavedList() {
+  const container = document.getElementById('saved-list');
+  const saved = getSaved();
+  if (saved.length === 0) {
+    container.innerHTML = '<div class="saved-empty">No saved trips yet.</div>';
+    return;
+  }
+  container.innerHTML = saved.map(e => `
+    <div class="saved-item">
+      <div class="saved-item-info">
+        <div class="saved-item-name">${esc(e.name)}</div>
+        <div class="saved-item-meta">Saved ${new Date(e.savedAt).toLocaleDateString('en-GB', {day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
+      <div class="saved-item-actions">
+        <button class="btn-xs btn-secondary" onclick="loadSaved('${e.id}')">Load</button>
+        <button class="btn-xs btn-danger"    onclick="deleteSaved('${e.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── Download offline HTML ─────────────────────────────────────────────────────
+function downloadAsHTML() {
+  if (!currentItinerary) return;
+  const html = generateOfflineHTML(currentItinerary);
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href: url, download: safeFilename(currentItinerary.trip_name) + '.html' });
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function safeFilename(name) {
+  return (name || 'itinerary').replace(/[^a-z0-9\-_\s]/gi, '').trim().replace(/\s+/g, '-').toLowerCase() || 'itinerary';
+}
+
+function generateOfflineHTML(data) {
+  const nights  = daysBetween(data.start_date, data.end_date);
+  const notesHTML = (data.important_notes || []).length > 0
+    ? `<div class="notes-card"><h3>📌 Important Notes</h3><ul>${(data.important_notes||[]).map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`
+    : '';
+  const daysHTML = (data.days || []).map((day, i) => offlineDayHTML(day, i)).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>${esc(data.trip_name||'Travel Itinerary')}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#0f172a;padding:1rem;line-height:1.5}
+.wrap{max-width:800px;margin:0 auto}
+.trip-header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.trip-name{font-size:1.4rem;font-weight:800}
+.trip-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin-top:.5rem;opacity:.88;font-size:.875rem}
+.card{background:white;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:1rem}
+.notes-card{background:white;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:1rem}
+.notes-card h3{font-size:.9rem;font-weight:700;margin-bottom:.6rem;color:#374151}
+.notes-card ul{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.notes-card li{font-size:.85rem;padding-left:1rem;position:relative;color:#374151}
+.notes-card li::before{content:'•';position:absolute;left:0;color:#2563eb}
+.day-card{border-radius:14px;overflow:hidden;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.day-head{background:white;padding:1rem 1.25rem .75rem;display:flex;align-items:flex-start;gap:.75rem;border-bottom:1px solid #f1f5f9}
+.day-badge{background:#2563eb;color:white;font-size:.65rem;font-weight:800;padding:.25rem .5rem;border-radius:6px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.day-info .date{font-weight:700;font-size:.95rem}
+.day-info .loc{color:#2563eb;font-size:.825rem;margin-top:.1rem;font-weight:500}
+.day-info .summ{color:#64748b;font-size:.8rem;margin-top:.2rem}
+.day-body{background:white;padding:.75rem 1.25rem 1rem}
+.events{display:flex;flex-direction:column;gap:.6rem}
+.event{display:flex;gap:.6rem;align-items:flex-start}
+.ttime{width:3.25rem;flex-shrink:0;text-align:right;padding-top:.55rem}
+.ttime .t{font-size:.78rem;font-weight:700;color:#374151}
+.ttime .te{font-size:.7rem;color:#94a3b8}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:.65rem}
+.ecard{flex:1;min-width:0;border-radius:0 8px 8px 0;padding:.5rem .75rem;border-left-width:3px;border-left-style:solid}
+.badge{display:inline-flex;align-items:center;gap:.2rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.15rem}
+.etitle{font-weight:700;font-size:.875rem;color:#0f172a}
+.edetails{font-size:.8rem;color:#4b5563;margin-top:.2rem;white-space:pre-wrap;word-break:break-word}
+.eref{font-size:.75rem;color:#6b7280;margin-top:.2rem;font-family:monospace}
+.enotes{font-size:.75rem;color:#0369a1;margin-top:.2rem}
+.no-events{color:#94a3b8;font-size:.82rem;text-align:center;padding:.75rem 0}
+footer{text-align:center;color:#cbd5e1;font-size:.75rem;padding:2rem 0 1.5rem}
+@media(max-width:600px){.ttime{width:2.75rem}}
+@media print{body{background:white}.trip-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="trip-header">
+  <div class="trip-name">${esc(data.trip_name||'Travel Itinerary')}</div>
+  <div class="trip-meta">
+    <span>📅 ${fmtDate(data.start_date)} – ${fmtDate(data.end_date)}</span>
+    <span>🌙 ${nights} night${nights!==1?'s':''}</span>
+    ${data.days?`<span>📋 ${data.days.length} day${data.days.length!==1?'s':''}</span>`:''}
+  </div>
+</div>
+${notesHTML}
+${daysHTML}
+<footer>Generated by Travel Itinerary Generator · Powered by Claude</footer>
+</div>
+</body>
+</html>`;
+}
+
+function offlineDayHTML(day, idx) {
+  const dateStr = day.date ? fmtDate(day.date) : `Day ${day.day_number||idx+1}`;
+  const weekday = day.date ? fmtWeekday(day.date) : '';
+  const dayNum  = day.day_number || idx + 1;
+  const events  = (day.events || []);
+
+  const eventsHTML = events.length === 0
+    ? '<div class="no-events">No events scheduled</div>'
+    : events.map(ev => {
+        const c = cfg(ev.type);
+        const hasTime    = ev.time    && ev.time    !== 'null';
+        const hasEndTime = ev.end_time && ev.end_time !== 'null';
+        return `
+<div class="event">
+  <div class="ttime">
+    ${hasTime    ? `<div class="t">${esc(ev.time)}</div>`    : ''}
+    ${hasEndTime ? `<div class="te">${esc(ev.end_time)}</div>` : ''}
+  </div>
+  <div class="dot" style="background:${c.color}"></div>
+  <div class="ecard" style="background:${c.bg};border-left-color:${c.color}">
+    <div class="badge" style="color:${c.color}">${c.icon} ${c.label}</div>
+    <div class="etitle">${esc(ev.title||'')}</div>
+    ${ev.details      ? `<div class="edetails">${esc(ev.details)}</div>`         : ''}
+    ${ev.confirmation ? `<div class="eref">🔖 Ref: ${esc(ev.confirmation)}</div>` : ''}
+    ${ev.notes        ? `<div class="enotes">💡 ${esc(ev.notes)}</div>`           : ''}
+  </div>
+</div>`;
+      }).join('');
+
+  return `
+<div class="day-card">
+  <div class="day-head">
+    <div class="day-badge">Day ${dayNum}</div>
+    <div class="day-info">
+      <div class="date">${weekday?weekday+', ':''}${dateStr}</div>
+      ${day.location ? `<div class="loc">📍 ${esc(day.location)}</div>` : ''}
+      ${day.summary  ? `<div class="summ">${esc(day.summary)}</div>`    : ''}
+    </div>
+  </div>
+  <div class="day-body"><div class="events">${eventsHTML}</div></div>
+</div>`;
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('en-GB', { day:'numeric', month:'long', year:'numeric' });
+  } catch { return dateStr; }
+}
+
+function fmtWeekday(dateStr) {
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return new Date(y, m-1, d).toLocaleDateString('en-GB', { weekday:'long' });
+  } catch { return ''; }
+}
+
+function daysBetween(a, b) {
+  try {
+    const [y1,m1,d1] = (a||'').split('-').map(Number);
+    const [y2,m2,d2] = (b||'').split('-').map(Number);
+    return Math.round((new Date(y2,m2-1,d2) - new Date(y1,m1-1,d1)) / 86400000);
+  } catch { return 0; }
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderSavedList();
+  document.getElementById('travel-input').addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generateItinerary();
+  });
+});
+</script>
+</body>
+</html>

@@ -1,36 +1,53 @@
-# Travel Itinerary CLI Tool
+# Travel Itinerary Generator
 
-This tool allows you to easily create a travel itinerary using a command line interface (CLI). Below are the instructions on how to set it up and use it.
+Paste messy travel info — flight confirmations, hotel bookings, tour reservations, notes, anything — and get a clean, day-by-day itinerary in seconds.
 
-## Setup Instructions
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Coding397/travel-itinerary-agent.git
-   cd travel-itinerary-agent
-   ```
+## Features
 
-2. **Install dependencies**:
-   Make sure you have the necessary packages installed. Run:
-   ```bash
-   npm install
-   ```
+- **Handles any input format** — paste from emails, booking sites, notes apps, all at once
+- **Day-by-day timeline** with colour-coded event types (flights, hotels, trains, activities, etc.)
+- **Save to browser** — itineraries persist in localStorage, accessible across sessions
+- **Download for offline** — exports a self-contained HTML file that works without internet (great for airports)
+- **Print-friendly** — the downloaded file prints cleanly
 
-3. **Run the CLI tool**:
-   You can execute the CLI tool by running:
-   ```bash
-   node index.js
-   ```
+## Setup
 
-## Using the Tool
-1. **Input Travel Information**:
-   When prompted, paste your travel information in the required format. Ensure that all necessary details (like destination, dates, and activities) are included.
+**1. Get an Anthropic API key** from [console.anthropic.com](https://console.anthropic.com)
 
-2. **Generate Itinerary**:
-   Once you've entered the information, the tool will process it and generate a markdown file containing your itinerary.
-   
-3. **Itinerary File**:
-   The generated file will be saved in markdown format, which you can easily edit or share for your travel plans.
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
 
-## Notes
-- Make sure to format your travel information correctly to ensure the best results.
-- The itinerary generated will be organized into sections for each day of travel, making it easy to read and follow.
+**3. Configure your API key**
+```bash
+cp .env.example .env
+# Edit .env and add your ANTHROPIC_API_KEY
+```
+
+**4. Run the server**
+```bash
+python app.py
+```
+
+**5. Open** [http://localhost:8000](http://localhost:8000)
+
+## Usage
+
+1. Paste any travel information into the text area (the messier the better — it can handle it)
+2. Click **Generate Itinerary** or press `Ctrl+Enter`
+3. Review your day-by-day plan
+4. **Save** to browser storage for later, or **Download** as an offline HTML file
+
+## Supported event types
+
+| Type | Examples |
+|------|---------|
+| ✈️ Flight | Departure & arrival, with flight numbers and terminals |
+| 🏨 Hotel | Check-in and check-out, with addresses and booking refs |
+| 🚂 Train | Rail journeys with times and booking references |
+| 🚌 Bus / ⛴️ Ferry | Transfers and crossings |
+| 🚗 Car rental | Pick-up and drop-off |
+| 🎯 Activity / 🗺️ Tour | Sightseeing, guided tours, experiences |
+| 🍽️ Restaurant | Dining reservations |
+| 📋 Meeting | Business or personal meetings |
