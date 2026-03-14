@@ -1,0 +1,3 @@
+claude-api-client==1.0.0
+requests==2.26.0
+click==8.0.1
