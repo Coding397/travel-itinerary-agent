@@ -285,7 +285,7 @@
 
   <!-- Input -->
   <div class="card input-section">
-    <label for="travel-input">Your travel information</label>
+    <label id="input-label" for="travel-input">Your travel information</label>
     <textarea
       id="travel-input"
       placeholder="Paste anything here: flight confirmation emails, hotel booking details, tour reservations, notes — any format, any source, all at once.
@@ -295,8 +295,8 @@ Flight BA456 LHR to CDG 14 Mar, depart 09:30, booking ref XY123
 Hotel Le Marais Paris, check in 14th March, 3 nights, conf #HT789
 Eiffel Tower skip-the-line tour 15 Mar at 14:00, meet at south pillar"
     ></textarea>
-    <p class="hint">Tip: Ctrl+Enter (or Cmd+Enter) to generate</p>
-    <button id="generate-btn" class="btn btn-primary" onclick="generateItinerary()">
+    <p class="hint">Tip: Ctrl+Enter (or Cmd+Enter) to generate / add</p>
+    <button id="generate-btn" class="btn btn-primary" onclick="handleSubmit()">
       Generate Itinerary
     </button>
   </div>
@@ -358,6 +358,25 @@ function cfg(type) { return EVENT_CFG[type] || EVENT_CFG.other; }
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentItinerary = null;
 
+function updateInputUI() {
+  const hasItinerary = !!currentItinerary;
+  document.getElementById('generate-btn').textContent = hasItinerary ? 'Add to Itinerary' : 'Generate Itinerary';
+  document.getElementById('input-label').textContent = hasItinerary
+    ? 'New bookings to add'
+    : 'Your travel information';
+  document.getElementById('travel-input').placeholder = hasItinerary
+    ? 'Paste new flight confirmations, hotel bookings, tours, or any other travel info to add to your itinerary.'
+    : document.getElementById('travel-input').placeholder;
+}
+
+function handleSubmit() {
+  if (currentItinerary) {
+    addToItinerary();
+  } else {
+    generateItinerary();
+  }
+}
+
 // ── Generate ──────────────────────────────────────────────────────────────────
 async function generateItinerary() {
   const text = document.getElementById('travel-input').value.trim();
@@ -408,11 +427,65 @@ async function generateItinerary() {
   }
 }
 
+// ── Add to existing itinerary ─────────────────────────────────────────────────
+async function addToItinerary() {
+  const text = document.getElementById('travel-input').value.trim();
+  if (!text) { showError('Please paste the new booking information above.'); return; }
+
+  setLoading(true);
+  hideError();
+
+  try {
+    const res = await fetch('/api/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, existing: currentItinerary }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Server error ${res.status}`);
+    }
+
+    const reader = res.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const lines = buf.split('\n');
+      buf = lines.pop() ?? '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const payload = line.slice(6);
+        if (payload === '[DONE]') break;
+        try {
+          const ev = JSON.parse(payload);
+          if (ev.type === 'status')   updateStatus(ev.message);
+          if (ev.type === 'error')    showError(ev.message);
+          if (ev.type === 'complete') {
+            currentItinerary = ev.data;
+            renderItinerary(ev.data);
+            document.getElementById('travel-input').value = '';
+          }
+        } catch { /* ignore partial JSON */ }
+      }
+    }
+  } catch (err) {
+    showError(err.message || 'Failed to update itinerary. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+}
+
 function setLoading(on) {
   const btn = document.getElementById('generate-btn');
   const bar = document.getElementById('status-bar');
   btn.disabled = on;
-  btn.textContent = on ? 'Generating…' : 'Generate Itinerary';
+  btn.textContent = on ? (currentItinerary ? 'Adding…' : 'Generating…') : (currentItinerary ? 'Add to Itinerary' : 'Generate Itinerary');
   bar.classList.toggle('show', on);
 }
 
@@ -450,6 +523,7 @@ function renderItinerary(data) {
 
   document.getElementById('itinerary-section').classList.add('show');
   document.getElementById('itinerary-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  updateInputUI();
 }
 
 function buildDayCard(day, idx) {
@@ -506,6 +580,7 @@ function clearItinerary() {
   currentItinerary = null;
   document.getElementById('itinerary-section').classList.remove('show');
   document.getElementById('travel-input').value = '';
+  updateInputUI();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

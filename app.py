@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
 import json
 import os
+from datetime import date, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -57,6 +58,32 @@ Rules:
 8. Return ONLY the JSON object. Nothing else."""
 
 
+def fill_missing_days(itinerary: dict) -> dict:
+    """Ensure every calendar day between start_date and end_date has an entry."""
+    try:
+        start = date.fromisoformat(itinerary["start_date"])
+        end   = date.fromisoformat(itinerary["end_date"])
+    except (KeyError, ValueError):
+        return itinerary
+
+    existing = {d["date"]: d for d in itinerary.get("days", []) if "date" in d}
+    all_days = []
+    current = start
+    day_num = 1
+    while current <= end:
+        ds = current.isoformat()
+        if ds in existing:
+            existing[ds]["day_number"] = day_num
+            all_days.append(existing[ds])
+        else:
+            all_days.append({"date": ds, "day_number": day_num, "location": "", "summary": "", "events": []})
+        day_num += 1
+        current += timedelta(days=1)
+
+    itinerary["days"] = all_days
+    return itinerary
+
+
 def extract_json(raw: str) -> dict:
     """Pull a JSON object out of a raw LLM response, stripping any prose or fences."""
     raw = raw.strip()
@@ -97,6 +124,26 @@ async def call_anthropic(text: str) -> str:
     return "".join(collected)
 
 
+MERGE_PROMPT = """You are an expert travel itinerary merger. You will be given an existing structured itinerary as JSON, plus new travel information (which may be messy, from emails, booking confirmations, etc.).
+
+Your job is to merge the new information into the existing itinerary and return the complete updated itinerary.
+
+Rules:
+1. Preserve ALL existing events — never drop anything already in the itinerary
+2. Add new events in the correct days, sorted by time
+3. If the new info adds days before or after the existing date range, expand the itinerary to cover them (include every day)
+4. Update trip_name, start_date, end_date if the new info changes the overall scope
+5. If a new event conflicts with an existing one (same type, same day, same time), update the existing one with any new details rather than duplicating
+6. Return ONLY a valid JSON object in exactly the same format as the input itinerary — no markdown, no explanation
+
+The format is:
+{
+  "trip_name": "...", "start_date": "YYYY-MM-DD", "end_date": "YYYY-MM-DD",
+  "days": [{"date": "YYYY-MM-DD", "day_number": 1, "location": "...", "summary": "...", "events": [...]}],
+  "important_notes": [...]
+}"""
+
+
 async def call_ollama(text: str) -> str:
     from openai import AsyncOpenAI
 
@@ -119,6 +166,103 @@ async def call_ollama(text: str) -> str:
         if delta:
             collected.append(delta)
     return "".join(collected)
+
+
+async def call_anthropic_merge(existing: dict, new_text: str) -> str:
+    from anthropic import AsyncAnthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise EnvironmentError("ANTHROPIC_API_KEY is not set")
+
+    client = AsyncAnthropic(api_key=api_key)
+    collected = []
+    async with client.messages.stream(
+        model="claude-opus-4-6",
+        max_tokens=16000,
+        thinking={"type": "adaptive"},
+        system=MERGE_PROMPT,
+        messages=[{"role": "user", "content": f"Existing itinerary:\n{json.dumps(existing, indent=2)}\n\nNew travel information to merge in:\n{new_text}"}],
+    ) as stream:
+        async for chunk in stream.text_stream:
+            collected.append(chunk)
+    return "".join(collected)
+
+
+async def call_ollama_merge(existing: dict, new_text: str) -> str:
+    from openai import AsyncOpenAI
+
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+    model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+    client = AsyncOpenAI(base_url=base_url, api_key="ollama")
+    collected = []
+    stream = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": MERGE_PROMPT},
+            {"role": "user", "content": f"Existing itinerary:\n{json.dumps(existing, indent=2)}\n\nNew travel information to merge in:\n{new_text}"},
+        ],
+        stream=True,
+        temperature=0.1,
+    )
+    async for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            collected.append(delta)
+    return "".join(collected)
+
+
+@app.post("/api/update")
+async def update_itinerary(request: Request):
+    body = await request.json()
+    text = body.get("text", "").strip()
+    existing = body.get("existing")
+
+    if not text:
+        return JSONResponse({"error": "No new travel information provided"}, status_code=400)
+    if not existing:
+        return JSONResponse({"error": "No existing itinerary provided"}, status_code=400)
+
+    async def event_stream():
+        def sse(payload: dict) -> str:
+            return f"data: {json.dumps(payload)}\n\n"
+
+        try:
+            yield sse({"type": "status", "message": "Merging new bookings into your itinerary..."})
+
+            if BACKEND == "ollama":
+                model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+                yield sse({"type": "status", "message": f"Running {model} locally..."})
+                raw = await call_ollama_merge(existing, text)
+            else:
+                yield sse({"type": "status", "message": "Updating your itinerary with Claude..."})
+                raw = await call_anthropic_merge(existing, text)
+
+            itinerary = fill_missing_days(extract_json(raw))
+            yield sse({"type": "complete", "data": itinerary})
+
+        except EnvironmentError as e:
+            yield sse({"type": "error", "message": str(e)})
+        except json.JSONDecodeError:
+            yield sse({"type": "error", "message": "The model returned invalid JSON. Try again."})
+        except ValueError as e:
+            yield sse({"type": "error", "message": str(e)})
+        except Exception as e:
+            msg = str(e)
+            if "authentication" in msg.lower() or "api_key" in msg.lower():
+                msg = "Invalid API key. Please check your ANTHROPIC_API_KEY."
+            elif "connection" in msg.lower() or "refused" in msg.lower():
+                msg = "Could not connect to Ollama. Is it running? (ollama serve)"
+            yield sse({"type": "error", "message": msg})
+        finally:
+            yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        event_stream(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.get("/")
@@ -155,7 +299,7 @@ async def generate_itinerary(request: Request):
                 yield sse({"type": "status", "message": "Building your itinerary with Claude..."})
                 raw = await call_anthropic(text)
 
-            itinerary = extract_json(raw)
+            itinerary = fill_missing_days(extract_json(raw))
             yield sse({"type": "complete", "data": itinerary})
 
         except EnvironmentError as e:
