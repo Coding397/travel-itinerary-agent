@@ -280,6 +280,7 @@
   <header>
     <h1>✈️ Travel Itinerary Generator</h1>
     <p>Paste any travel info — flights, hotels, tours — and get a clean day-by-day plan.</p>
+    <p id="backend-badge" style="margin-top:0.5rem;font-size:0.8rem;color:#94a3b8"></p>
   </header>
 
   <!-- Input -->
@@ -729,6 +730,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('travel-input').addEventListener('keydown', e => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generateItinerary();
   });
+  // Show active backend in header
+  fetch('/api/config').then(r => r.json()).then(cfg => {
+    const badge = document.getElementById('backend-badge');
+    if (cfg.backend === 'ollama') {
+      badge.textContent = `🖥️ Local model: ${cfg.model}`;
+      badge.style.color = '#059669';
+    } else {
+      badge.textContent = `☁️ Powered by Claude (${cfg.model})`;
+    }
+  }).catch(() => {});
 });
 </script>
 </body>

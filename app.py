@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
-from anthropic import AsyncAnthropic
 import json
 import os
 from dotenv import load_dotenv
@@ -9,6 +8,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI(title="Travel Itinerary Generator")
+
+# ── Backend selection ─────────────────────────────────────────────────────────
+# Set BACKEND=ollama in .env to use a local model via Ollama (free).
+# Leave unset or set BACKEND=anthropic to use Claude (paid).
+BACKEND = os.getenv("BACKEND", "anthropic").lower()
 
 SYSTEM_PROMPT = """You are an expert travel itinerary parser. Parse the user's travel information (which may be messy, from multiple sources, poorly formatted) and return a clean, structured JSON itinerary.
 
@@ -53,9 +57,79 @@ Rules:
 8. Return ONLY the JSON object. Nothing else."""
 
 
+def extract_json(raw: str) -> dict:
+    """Pull a JSON object out of a raw LLM response, stripping any prose or fences."""
+    raw = raw.strip()
+    # Strip markdown code fences
+    if raw.startswith("```"):
+        lines = raw.splitlines()
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        raw = "\n".join(lines).strip()
+    # Find the outermost { ... }
+    start = raw.find("{")
+    end = raw.rfind("}") + 1
+    if start == -1 or end <= start:
+        raise ValueError("No JSON object found in response")
+    return json.loads(raw[start:end])
+
+
+async def call_anthropic(text: str) -> str:
+    from anthropic import AsyncAnthropic
+
+    api_key = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise EnvironmentError("ANTHROPIC_API_KEY is not set")
+
+    client = AsyncAnthropic(api_key=api_key)
+    collected = []
+    async with client.messages.stream(
+        model="claude-opus-4-6",
+        max_tokens=16000,
+        thinking={"type": "adaptive"},
+        system=SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": f"Parse this travel information into a structured itinerary:\n\n{text}"}],
+    ) as stream:
+        async for chunk in stream.text_stream:
+            collected.append(chunk)
+    return "".join(collected)
+
+
+async def call_ollama(text: str) -> str:
+    from openai import AsyncOpenAI
+
+    base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+    model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+
+    client = AsyncOpenAI(base_url=base_url, api_key="ollama")
+    collected = []
+    stream = await client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Parse this travel information into a structured itinerary:\n\n{text}"},
+        ],
+        stream=True,
+        temperature=0.1,  # Low temperature for more reliable JSON output
+    )
+    async for chunk in stream:
+        delta = chunk.choices[0].delta.content
+        if delta:
+            collected.append(delta)
+    return "".join(collected)
+
+
 @app.get("/")
 async def root():
     return FileResponse("static/index.html")
+
+
+@app.get("/api/config")
+async def get_config():
+    """Tell the frontend which backend is active."""
+    return {"backend": BACKEND, "model": os.getenv("OLLAMA_MODEL", "qwen2.5:7b") if BACKEND == "ollama" else "claude-opus-4-6"}
 
 
 @app.post("/api/generate")
@@ -66,66 +140,39 @@ async def generate_itinerary(request: Request):
     if not text:
         return JSONResponse({"error": "No travel information provided"}, status_code=400)
 
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        return JSONResponse(
-            {"error": "ANTHROPIC_API_KEY is not configured on the server"},
-            status_code=500,
-        )
-
-    client = AsyncAnthropic(api_key=api_key)
-
     async def event_stream():
+        def sse(payload: dict) -> str:
+            return f"data: {json.dumps(payload)}\n\n"
+
         try:
-            yield f"data: {json.dumps({'type': 'status', 'message': 'Analyzing your travel information...'})}\n\n"
+            yield sse({"type": "status", "message": "Analyzing your travel information..."})
 
-            collected = []
-            async with client.messages.stream(
-                model="claude-opus-4-6",
-                max_tokens=16000,
-                thinking={"type": "adaptive"},
-                system=SYSTEM_PROMPT,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Parse this travel information into a structured itinerary:\n\n{text}",
-                    }
-                ],
-            ) as stream:
-                yield f"data: {json.dumps({'type': 'status', 'message': 'Building your itinerary...'})}\n\n"
-                async for chunk in stream.text_stream:
-                    collected.append(chunk)
+            if BACKEND == "ollama":
+                model = os.getenv("OLLAMA_MODEL", "qwen2.5:7b")
+                yield sse({"type": "status", "message": f"Running {model} locally..."})
+                raw = await call_ollama(text)
+            else:
+                yield sse({"type": "status", "message": "Building your itinerary with Claude..."})
+                raw = await call_anthropic(text)
 
-            raw = "".join(collected).strip()
+            itinerary = extract_json(raw)
+            yield sse({"type": "complete", "data": itinerary})
 
-            # Strip markdown code fences if present
-            if raw.startswith("```"):
-                lines = raw.splitlines()
-                if lines[0].startswith("```"):
-                    lines = lines[1:]
-                if lines and lines[-1].strip() == "```":
-                    lines = lines[:-1]
-                raw = "\n".join(lines).strip()
-
-            # Extract JSON object
-            start = raw.find("{")
-            end = raw.rfind("}") + 1
-            if start == -1 or end <= start:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Could not extract itinerary data. Please include more travel details and try again.'})}\n\n"
-                return
-
-            itinerary = json.loads(raw[start:end])
-            yield f"data: {json.dumps({'type': 'complete', 'data': itinerary})}\n\n"
-
+        except EnvironmentError as e:
+            yield sse({"type": "error", "message": str(e)})
         except json.JSONDecodeError:
-            yield f"data: {json.dumps({'type': 'error', 'message': 'Failed to parse the response as JSON. Please try again.'})}\n\n"
+            yield sse({"type": "error", "message": "The model returned invalid JSON. Try again, or switch to a more capable model."})
+        except ValueError as e:
+            yield sse({"type": "error", "message": str(e)})
         except Exception as e:
             msg = str(e)
             if "authentication" in msg.lower() or "api_key" in msg.lower():
                 msg = "Invalid API key. Please check your ANTHROPIC_API_KEY."
             elif "rate_limit" in msg.lower():
                 msg = "Rate limit reached. Please wait a moment and try again."
-            yield f"data: {json.dumps({'type': 'error', 'message': msg})}\n\n"
+            elif "connection" in msg.lower() or "refused" in msg.lower():
+                msg = f"Could not connect to Ollama. Is it running? (ollama serve)"
+            yield sse({"type": "error", "message": msg})
         finally:
             yield "data: [DONE]\n\n"
 
