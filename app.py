@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import StreamingResponse, FileResponse, JSONResponse
+from fastapi.responses import StreamingResponse, FileResponse, JSONResponse, RedirectResponse
 import json
 import os
 from datetime import date, timedelta
@@ -49,7 +49,15 @@ Return ONLY a valid JSON object (no markdown, no code blocks, no explanation) in
 
 Rules:
 1. Include EVERY day from start_date to end_date, including pure transit/travel days
-2. For flights: add departure event on departure day; if overnight flight, add arrival event on arrival day
+2. For flights — CRITICAL, read carefully:
+   - Always place a departure event on the departure date
+   - ALWAYS check for journey duration indicators: "2d 9h 30m", "Journey duration: X days", "+1", "+2", next-day arrival symbols, or any sign the flight spans multiple days
+   - If the journey duration is 1 day or more (e.g. "2d ...", "+1", "+2"), the arrival is on a LATER date — calculate it: departure date + number of full days crossed
+   - Example: departs April 8, journey "2d 9h 30m" → arrives April 10; place the arrival event on April 10, NOT April 8
+   - Example: departs May 2 at 16:35, arrives next morning → arrival event on May 3
+   - For long-haul international flights (e.g. transatlantic, transpacific), assume overnight/multi-day unless the data explicitly confirms same-day arrival
+   - Place an arrival event on the correct arrival date showing the landing time
+   - NEVER put both departure and arrival on the same day unless the data clearly confirms same-day arrival
 3. For hotels: add hotel_checkin event on first night, hotel_checkout on departure day
 4. Sort events within each day by time (null times go last)
 5. If a time is genuinely unknown, use null — do not guess
@@ -134,7 +142,8 @@ Rules:
 3. If the new info adds days before or after the existing date range, expand the itinerary to cover them (include every day)
 4. Update trip_name, start_date, end_date if the new info changes the overall scope
 5. If a new event conflicts with an existing one (same type, same day, same time), update the existing one with any new details rather than duplicating
-6. Return ONLY a valid JSON object in exactly the same format as the input itinerary — no markdown, no explanation
+6. For flights — CRITICAL: check for journey duration indicators ("2d 9h 30m", "+1", "+2", next-day symbols). If the flight spans multiple days, place the departure event on the departure date and the arrival event on the correct arrival date (departure date + days elapsed). Never put arrival on the same day as departure for multi-day flights.
+7. Return ONLY a valid JSON object in exactly the same format as the input itinerary — no markdown, no explanation
 
 The format is:
 {
@@ -213,7 +222,7 @@ async def call_ollama_merge(existing: dict, new_text: str) -> str:
     return "".join(collected)
 
 
-@app.post("/api/update")
+@app.post("/itinerary/api/update")
 async def update_itinerary(request: Request):
     body = await request.json()
     text = body.get("text", "").strip()
@@ -266,17 +275,22 @@ async def update_itinerary(request: Request):
 
 
 @app.get("/")
+async def root_redirect():
+    return RedirectResponse(url="/itinerary")
+
+
+@app.get("/itinerary")
 async def root():
     return FileResponse("static/index.html")
 
 
-@app.get("/api/config")
+@app.get("/itinerary/api/config")
 async def get_config():
     """Tell the frontend which backend is active."""
     return {"backend": BACKEND, "model": os.getenv("OLLAMA_MODEL", "qwen2.5:7b") if BACKEND == "ollama" else "claude-opus-4-6"}
 
 
-@app.post("/api/generate")
+@app.post("/itinerary/api/generate")
 async def generate_itinerary(request: Request):
     body = await request.json()
     text = body.get("text", "").strip()
@@ -327,7 +341,7 @@ async def generate_itinerary(request: Request):
     )
 
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/itinerary/static", StaticFiles(directory="static"), name="static")
 
 if __name__ == "__main__":
     import uvicorn

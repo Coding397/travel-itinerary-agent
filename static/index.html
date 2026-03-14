@@ -9,7 +9,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: #f1f5f9;
+      background: #fafaf9;
       color: #0f172a;
       min-height: 100vh;
       line-height: 1.5;
@@ -19,8 +19,8 @@
 
     /* ── Header ── */
     header { text-align: center; padding: 2rem 0 1.5rem; }
-    header h1 { font-size: 1.8rem; font-weight: 800; color: #1e40af; letter-spacing: -0.5px; }
-    header p { color: #64748b; margin-top: 0.3rem; font-size: 0.95rem; }
+    header h1 { font-size: 1.8rem; font-weight: 800; color: #9a3412; letter-spacing: -0.5px; }
+    header p { color: #78716c; margin-top: 0.3rem; font-size: 0.95rem; }
 
     /* ── Cards ── */
     .card {
@@ -43,7 +43,7 @@
       width: 100%;
       min-height: 180px;
       padding: 0.75rem;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid #e7e5e4;
       border-radius: 8px;
       font-family: inherit;
       font-size: 0.875rem;
@@ -51,9 +51,9 @@
       transition: border-color 0.2s;
       color: #0f172a;
     }
-    textarea:focus { outline: none; border-color: #2563eb; }
-    textarea::placeholder { color: #94a3b8; }
-    .hint { font-size: 0.75rem; color: #94a3b8; margin-top: 0.4rem; }
+    textarea:focus { outline: none; border-color: #ea580c; }
+    textarea::placeholder { color: #a8a29e; }
+    .hint { font-size: 0.75rem; color: #a8a29e; margin-top: 0.4rem; }
 
     /* ── Buttons ── */
     .btn {
@@ -72,10 +72,10 @@
       text-decoration: none;
     }
     .btn:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-primary { background: #2563eb; color: white; width: 100%; margin-top: 0.75rem; font-size: 0.95rem; padding: 0.75rem; }
-    .btn-primary:not(:disabled):hover { background: #1d4ed8; }
-    .btn-secondary { background: #f1f5f9; color: #374151; }
-    .btn-secondary:not(:disabled):hover { background: #e2e8f0; }
+    .btn-primary { background: #ea580c; color: white; width: 100%; margin-top: 0.75rem; font-size: 0.95rem; padding: 0.75rem; }
+    .btn-primary:not(:disabled):hover { background: #c2410c; }
+    .btn-secondary { background: #f5f5f4; color: #374151; }
+    .btn-secondary:not(:disabled):hover { background: #e7e5e4; }
     .btn-success { background: #dcfce7; color: #15803d; }
     .btn-success:not(:disabled):hover { background: #bbf7d0; }
     .btn-danger { background: #fee2e2; color: #dc2626; }
@@ -88,17 +88,17 @@
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem 1rem;
-      background: #eff6ff;
+      background: #fff7ed;
       border-radius: 10px;
-      color: #1d4ed8;
+      color: #c2410c;
       font-size: 0.875rem;
       margin-bottom: 1rem;
     }
     .status-bar.show { display: flex; }
     .spinner {
       width: 18px; height: 18px; flex-shrink: 0;
-      border: 2.5px solid #bfdbfe;
-      border-top-color: #2563eb;
+      border: 2.5px solid #fed7aa;
+      border-top-color: #ea580c;
       border-radius: 50%;
       animation: spin 0.7s linear infinite;
     }
@@ -121,7 +121,7 @@
     #itinerary-section.show { display: block; }
 
     .trip-header {
-      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      background: linear-gradient(135deg, #7c2d12 0%, #ea580c 100%);
       color: white;
       border-radius: 14px;
       padding: 1.5rem;
@@ -156,7 +156,7 @@
       padding-left: 1rem;
       position: relative;
     }
-    .notes-list li::before { content: '•'; position: absolute; left: 0; color: #2563eb; }
+    .notes-list li::before { content: '•'; position: absolute; left: 0; color: #ea580c; }
 
     /* ── Day cards ── */
     .day-card { border-radius: 14px; overflow: hidden; margin-bottom: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
@@ -166,10 +166,10 @@
       display: flex;
       align-items: flex-start;
       gap: 0.75rem;
-      border-bottom: 1px solid #f1f5f9;
+      border-bottom: 1px solid #fafaf9;
     }
     .day-badge {
-      background: #2563eb;
+      background: #ea580c;
       color: white;
       font-size: 0.65rem;
       font-weight: 800;
@@ -182,9 +182,23 @@
     }
     .day-info { flex: 1; min-width: 0; }
     .day-date { font-weight: 700; font-size: 0.95rem; }
-    .day-location { color: #2563eb; font-size: 0.825rem; margin-top: 0.1rem; font-weight: 500; }
-    .day-summary { color: #64748b; font-size: 0.8rem; margin-top: 0.2rem; }
+    .day-location { color: #ea580c; font-size: 0.825rem; margin-top: 0.1rem; font-weight: 500; }
+    .day-summary { color: #78716c; font-size: 0.8rem; margin-top: 0.2rem; }
     .day-card-body { background: white; padding: 0.75rem 1.25rem 1rem; }
+
+    /* ── Day edit button ── */
+    .day-edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.75rem;
+      color: #a8a29e;
+      padding: 0.25rem 0.4rem;
+      border-radius: 5px;
+      flex-shrink: 0;
+      transition: color 0.15s, background 0.15s;
+    }
+    .day-edit-btn:hover { color: #ea580c; background: #fff7ed; }
 
     /* ── Events ── */
     .events { display: flex; flex-direction: column; gap: 0.6rem; }
@@ -200,7 +214,7 @@
       padding-top: 0.55rem;
     }
     .event-time { font-size: 0.78rem; font-weight: 700; color: #374151; line-height: 1.2; }
-    .event-time-end { font-size: 0.7rem; color: #94a3b8; line-height: 1.2; }
+    .event-time-end { font-size: 0.7rem; color: #a8a29e; line-height: 1.2; }
     .event-dot {
       width: 10px; height: 10px;
       border-radius: 50%;
@@ -216,6 +230,7 @@
       border-left: 3px solid var(--event-color, #6b7280);
       border-radius: 0 8px 8px 0;
       padding: 0.5rem 0.75rem;
+      position: relative;
     }
     .event-badge {
       display: inline-flex;
@@ -231,23 +246,60 @@
     .event-title { font-weight: 700; font-size: 0.875rem; color: #0f172a; }
     .event-details { font-size: 0.8rem; color: #4b5563; margin-top: 0.2rem; white-space: pre-wrap; word-break: break-word; }
     .event-confirmation { font-size: 0.75rem; color: #6b7280; margin-top: 0.2rem; font-family: 'SF Mono', 'Fira Code', monospace; }
-    .event-notes { font-size: 0.75rem; color: #0369a1; margin-top: 0.2rem; }
-    .no-events { color: #94a3b8; font-size: 0.82rem; text-align: center; padding: 0.75rem 0; }
+    .event-notes { font-size: 0.75rem; color: #c2410c; margin-top: 0.2rem; }
+    .no-events { color: #a8a29e; font-size: 0.82rem; text-align: center; padding: 0.75rem 0; }
+
+    /* ── Event edit button ── */
+    .event-edit-btn {
+      position: absolute;
+      top: 0.35rem;
+      right: 0.4rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 0.7rem;
+      color: #d4cdc9;
+      padding: 0.15rem 0.3rem;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+      line-height: 1;
+    }
+    .event-edit-btn:hover { color: #ea580c; background: color-mix(in srgb, var(--event-color, #ea580c) 12%, transparent); }
+
+    /* ── Add event button ── */
+    .add-event-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+      padding: 0.4rem 0.6rem;
+      background: none;
+      border: 1.5px dashed #e7e5e4;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: #a8a29e;
+      font-family: inherit;
+      font-weight: 500;
+      width: 100%;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .add-event-btn:hover { border-color: #ea580c; color: #ea580c; }
 
     /* ── Saved trips ── */
     .saved-section h2 { font-size: 0.9rem; font-weight: 700; color: #374151; margin-bottom: 0.75rem; }
-    .saved-empty { color: #94a3b8; font-size: 0.85rem; text-align: center; padding: 1rem 0; }
+    .saved-empty { color: #a8a29e; font-size: 0.85rem; text-align: center; padding: 1rem 0; }
     .saved-list { display: flex; flex-direction: column; gap: 0.5rem; }
     .saved-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
       padding: 0.6rem 0.75rem;
-      border: 1px solid #e2e8f0;
+      border: 1px solid #e7e5e4;
       border-radius: 8px;
       transition: background 0.1s;
     }
-    .saved-item:hover { background: #f8fafc; }
+    .saved-item:hover { background: #fafaf9; }
     .saved-item-info { flex: 1; min-width: 0; }
     .saved-item-name {
       font-weight: 600;
@@ -256,15 +308,80 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .saved-item-meta { font-size: 0.73rem; color: #94a3b8; margin-top: 0.05rem; }
+    .saved-item-meta { font-size: 0.73rem; color: #a8a29e; margin-top: 0.05rem; }
     .saved-item-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
 
     footer {
       text-align: center;
-      color: #cbd5e1;
+      color: #d6d3d1;
       font-size: 0.75rem;
       padding: 2rem 0 1.5rem;
     }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #f5f5f4;
+    }
+    .modal-header h2 { font-size: 1rem; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.1rem; color: #a8a29e; padding: 0.25rem;
+      border-radius: 4px; line-height: 1;
+    }
+    .modal-close:hover { color: #374151; background: #f5f5f4; }
+    .modal-body { padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem; max-height: 70vh; overflow-y: auto; }
+    .modal-footer {
+      display: flex;
+      gap: 0.5rem;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid #f5f5f4;
+      align-items: center;
+    }
+    .modal-footer .spacer { flex: 1; }
+
+    .field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
+    .field input, .field select, .field textarea {
+      padding: 0.5rem 0.65rem;
+      border: 1.5px solid #e7e5e4;
+      border-radius: 7px;
+      font-family: inherit;
+      font-size: 0.85rem;
+      color: #0f172a;
+      min-height: unset;
+      transition: border-color 0.15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline: none; border-color: #ea580c;
+    }
+    .field textarea { min-height: 80px; resize: vertical; }
+    .field-row { display: flex; gap: 0.5rem; }
+    .field-row .field { flex: 1; }
+
+    .btn-sm { padding: 0.5rem 1rem; font-size: 0.85rem; }
 
     @media (max-width: 600px) {
       header h1 { font-size: 1.4rem; }
@@ -280,7 +397,7 @@
   <header>
     <h1>✈️ Travel Itinerary Generator</h1>
     <p>Paste any travel info — flights, hotels, tours — and get a clean day-by-day plan.</p>
-    <p id="backend-badge" style="margin-top:0.5rem;font-size:0.8rem;color:#94a3b8"></p>
+    <p id="backend-badge" style="margin-top:0.5rem;font-size:0.8rem;color:#a8a29e"></p>
   </header>
 
   <!-- Input -->
@@ -335,6 +452,19 @@ Eiffel Tower skip-the-line tour 15 Mar at 14:00, meet at south pillar"
   <footer>Travel Itinerary Generator · Powered by Claude</footer>
 
 </div>
+
+<!-- ── Edit Modal ──────────────────────────────────────────────────────────── -->
+<div id="edit-modal" class="modal-overlay" onclick="onModalOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Edit Event</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
 <script>
 // ── Event type configuration ──────────────────────────────────────────────────
 const EVENT_CFG = {
@@ -349,7 +479,7 @@ const EVENT_CFG = {
   activity:      { icon: '🎯',  color: '#059669', bg: '#ecfdf5',  label: 'Activity'    },
   tour:          { icon: '🗺️',  color: '#059669', bg: '#ecfdf5',  label: 'Tour'        },
   restaurant:    { icon: '🍽️',  color: '#dc2626', bg: '#fef2f2',  label: 'Restaurant'  },
-  meeting:       { icon: '📋',  color: '#2563eb', bg: '#eff6ff',  label: 'Meeting'     },
+  meeting:       { icon: '📋',  color: '#c2410c', bg: '#fff7ed',  label: 'Meeting'     },
   other:         { icon: '📍',  color: '#6b7280', bg: '#f9fafb',  label: 'Other'       },
 };
 
@@ -357,6 +487,9 @@ function cfg(type) { return EVENT_CFG[type] || EVENT_CFG.other; }
 
 // ── State ─────────────────────────────────────────────────────────────────────
 let currentItinerary = null;
+
+// Modal state
+let modalState = null; // { mode: 'event'|'day', dayIdx, evtIdx }
 
 function updateInputUI() {
   const hasItinerary = !!currentItinerary;
@@ -386,7 +519,7 @@ async function generateItinerary() {
   hideError();
 
   try {
-    const res = await fetch('/api/generate', {
+    const res = await fetch('/itinerary/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text }),
@@ -397,29 +530,7 @@ async function generateItinerary() {
       throw new Error(err.error || `Server error ${res.status}`);
     }
 
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop() ?? '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const payload = line.slice(6);
-        if (payload === '[DONE]') break;
-        try {
-          const ev = JSON.parse(payload);
-          if (ev.type === 'status')   updateStatus(ev.message);
-          if (ev.type === 'error')    showError(ev.message);
-          if (ev.type === 'complete') { currentItinerary = ev.data; renderItinerary(ev.data); }
-        } catch { /* ignore partial JSON */ }
-      }
-    }
+    await readSSE(res);
   } catch (err) {
     showError(err.message || 'Failed to generate itinerary. Please try again.');
   } finally {
@@ -436,7 +547,7 @@ async function addToItinerary() {
   hideError();
 
   try {
-    const res = await fetch('/api/update', {
+    const res = await fetch('/itinerary/api/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, existing: currentItinerary }),
@@ -447,37 +558,41 @@ async function addToItinerary() {
       throw new Error(err.error || `Server error ${res.status}`);
     }
 
-    const reader = res.body.getReader();
-    const dec = new TextDecoder();
-    let buf = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop() ?? '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const payload = line.slice(6);
-        if (payload === '[DONE]') break;
-        try {
-          const ev = JSON.parse(payload);
-          if (ev.type === 'status')   updateStatus(ev.message);
-          if (ev.type === 'error')    showError(ev.message);
-          if (ev.type === 'complete') {
-            currentItinerary = ev.data;
-            renderItinerary(ev.data);
-            document.getElementById('travel-input').value = '';
-          }
-        } catch { /* ignore partial JSON */ }
-      }
-    }
+    await readSSE(res, true);
   } catch (err) {
     showError(err.message || 'Failed to update itinerary. Please try again.');
   } finally {
     setLoading(false);
+  }
+}
+
+async function readSSE(res, clearInput = false) {
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let buf = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    const lines = buf.split('\n');
+    buf = lines.pop() ?? '';
+
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue;
+      const payload = line.slice(6);
+      if (payload === '[DONE]') break;
+      try {
+        const ev = JSON.parse(payload);
+        if (ev.type === 'status')   updateStatus(ev.message);
+        if (ev.type === 'error')    showError(ev.message);
+        if (ev.type === 'complete') {
+          currentItinerary = ev.data;
+          renderItinerary(ev.data);
+          if (clearInput) document.getElementById('travel-input').value = '';
+        }
+      } catch { /* ignore partial JSON */ }
+    }
   }
 }
 
@@ -526,14 +641,23 @@ function renderItinerary(data) {
   updateInputUI();
 }
 
+function rerenderDay(dayIdx) {
+  const container = document.getElementById('days-container');
+  const cards = container.querySelectorAll('.day-card');
+  if (cards[dayIdx]) {
+    const newCard = buildDayCard(currentItinerary.days[dayIdx], dayIdx);
+    cards[dayIdx].replaceWith(newCard);
+  }
+}
+
 function buildDayCard(day, idx) {
   const el = document.createElement('div');
   el.className = 'day-card';
 
-  const dateStr   = day.date ? fmtDate(day.date) : `Day ${day.day_number || idx + 1}`;
-  const weekday   = day.date ? fmtWeekday(day.date) : '';
-  const dayNum    = day.day_number || idx + 1;
-  const events    = (day.events || []);
+  const dateStr = day.date ? fmtDate(day.date) : `Day ${day.day_number || idx + 1}`;
+  const weekday = day.date ? fmtWeekday(day.date) : '';
+  const dayNum  = day.day_number || idx + 1;
+  const events  = (day.events || []);
 
   el.innerHTML = `
     <div class="day-card-header">
@@ -543,18 +667,20 @@ function buildDayCard(day, idx) {
         ${day.location ? `<div class="day-location">📍 ${esc(day.location)}</div>` : ''}
         ${day.summary  ? `<div class="day-summary">${esc(day.summary)}</div>`      : ''}
       </div>
+      <button class="day-edit-btn" onclick="openDayEditor(${idx})" title="Edit day">✏️</button>
     </div>
     <div class="day-card-body">
       <div class="events">
         ${events.length === 0
           ? '<div class="no-events">No events scheduled</div>'
-          : events.map(buildEventHTML).join('')}
+          : events.map((ev, ei) => buildEventHTML(ev, idx, ei)).join('')}
       </div>
+      <button class="add-event-btn" onclick="openEventEditor(${idx}, -1)">＋ Add event</button>
     </div>`;
   return el;
 }
 
-function buildEventHTML(ev) {
+function buildEventHTML(ev, dayIdx, evtIdx) {
   const c = cfg(ev.type);
   const hasTime    = ev.time    && ev.time    !== 'null';
   const hasEndTime = ev.end_time && ev.end_time !== 'null';
@@ -567,6 +693,7 @@ function buildEventHTML(ev) {
       </div>
       <div class="event-dot"></div>
       <div class="event-card">
+        <button class="event-edit-btn" onclick="openEventEditor(${dayIdx},${evtIdx})" title="Edit">✏️</button>
         <div class="event-badge">${c.icon} ${c.label}</div>
         <div class="event-title">${esc(ev.title || '')}</div>
         ${ev.details      ? `<div class="event-details">${esc(ev.details)}</div>`                          : ''}
@@ -582,6 +709,154 @@ function clearItinerary() {
   document.getElementById('travel-input').value = '';
   updateInputUI();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function closeModal() {
+  document.getElementById('edit-modal').classList.remove('show');
+  modalState = null;
+}
+
+function onModalOverlayClick(e) {
+  if (e.target === document.getElementById('edit-modal')) closeModal();
+}
+
+// Open event editor. evtIdx = -1 means new event.
+function openEventEditor(dayIdx, evtIdx) {
+  const day = currentItinerary.days[dayIdx];
+  const ev  = evtIdx >= 0 ? day.events[evtIdx] : {};
+  modalState = { mode: 'event', dayIdx, evtIdx };
+
+  document.getElementById('modal-title').textContent = evtIdx >= 0 ? 'Edit Event' : 'Add Event';
+
+  const typeOptions = Object.entries(EVENT_CFG)
+    .map(([k, v]) => `<option value="${k}" ${k === (ev.type||'other') ? 'selected' : ''}>${v.icon} ${v.label}</option>`)
+    .join('');
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="field">
+      <label>Type</label>
+      <select id="f-type">${typeOptions}</select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Time</label>
+        <input id="f-time" type="text" placeholder="HH:MM" value="${esc(ev.time && ev.time !== 'null' ? ev.time : '')}">
+      </div>
+      <div class="field">
+        <label>End time</label>
+        <input id="f-end-time" type="text" placeholder="HH:MM" value="${esc(ev.end_time && ev.end_time !== 'null' ? ev.end_time : '')}">
+      </div>
+    </div>
+    <div class="field">
+      <label>Title</label>
+      <input id="f-title" type="text" placeholder="e.g. Flight TK1422 Tallinn → Istanbul" value="${esc(ev.title || '')}">
+    </div>
+    <div class="field">
+      <label>Details</label>
+      <textarea id="f-details" placeholder="Flight numbers, airline, terminal, address, operator…">${esc(ev.details || '')}</textarea>
+    </div>
+    <div class="field">
+      <label>Confirmation / reference</label>
+      <input id="f-confirmation" type="text" placeholder="Booking ref" value="${esc(ev.confirmation || '')}">
+    </div>
+    <div class="field">
+      <label>Notes</label>
+      <input id="f-notes" type="text" placeholder="Reminders, tips, warnings" value="${esc(ev.notes || '')}">
+    </div>`;
+
+  const footer = document.getElementById('modal-footer');
+  if (evtIdx >= 0) {
+    footer.innerHTML = `
+      <button class="btn btn-danger btn-sm" onclick="deleteEvent()">Delete</button>
+      <span class="spacer"></span>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEvent()">Save</button>`;
+  } else {
+    footer.innerHTML = `
+      <span class="spacer"></span>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveEvent()">Add Event</button>`;
+  }
+
+  document.getElementById('edit-modal').classList.add('show');
+  setTimeout(() => document.getElementById('f-title').focus(), 50);
+}
+
+function saveEvent() {
+  const { dayIdx, evtIdx } = modalState;
+  const ev = {
+    type:         document.getElementById('f-type').value,
+    time:         document.getElementById('f-time').value.trim() || null,
+    end_time:     document.getElementById('f-end-time').value.trim() || null,
+    title:        document.getElementById('f-title').value.trim(),
+    details:      document.getElementById('f-details').value.trim() || null,
+    confirmation: document.getElementById('f-confirmation').value.trim() || null,
+    notes:        document.getElementById('f-notes').value.trim() || null,
+  };
+
+  const day = currentItinerary.days[dayIdx];
+  if (evtIdx >= 0) {
+    day.events[evtIdx] = ev;
+  } else {
+    day.events.push(ev);
+    // Sort by time
+    day.events.sort((a, b) => {
+      if (!a.time) return 1;
+      if (!b.time) return -1;
+      return a.time.localeCompare(b.time);
+    });
+  }
+
+  closeModal();
+  rerenderDay(dayIdx);
+}
+
+function deleteEvent() {
+  const { dayIdx, evtIdx } = modalState;
+  currentItinerary.days[dayIdx].events.splice(evtIdx, 1);
+  closeModal();
+  rerenderDay(dayIdx);
+}
+
+// Open day editor
+function openDayEditor(dayIdx) {
+  const day = currentItinerary.days[dayIdx];
+  modalState = { mode: 'day', dayIdx };
+
+  document.getElementById('modal-title').textContent = 'Edit Day';
+
+  document.getElementById('modal-body').innerHTML = `
+    <div class="field">
+      <label>Date</label>
+      <input id="f-date" type="date" value="${esc(day.date || '')}">
+    </div>
+    <div class="field">
+      <label>Location</label>
+      <input id="f-location" type="text" placeholder="City, Country" value="${esc(day.location || '')}">
+    </div>
+    <div class="field">
+      <label>Summary</label>
+      <input id="f-summary" type="text" placeholder="One-line summary of the day" value="${esc(day.summary || '')}">
+    </div>`;
+
+  document.getElementById('modal-footer').innerHTML = `
+    <span class="spacer"></span>
+    <button class="btn btn-secondary btn-sm" onclick="closeModal()">Cancel</button>
+    <button class="btn btn-primary btn-sm" onclick="saveDay()">Save</button>`;
+
+  document.getElementById('edit-modal').classList.add('show');
+  setTimeout(() => document.getElementById('f-location').focus(), 50);
+}
+
+function saveDay() {
+  const { dayIdx } = modalState;
+  const day = currentItinerary.days[dayIdx];
+  day.date     = document.getElementById('f-date').value || day.date;
+  day.location = document.getElementById('f-location').value.trim();
+  day.summary  = document.getElementById('f-summary').value.trim();
+  closeModal();
+  rerenderDay(dayIdx);
 }
 
 // ── localStorage ──────────────────────────────────────────────────────────────
@@ -672,9 +947,9 @@ function generateOfflineHTML(data) {
 <title>${esc(data.trip_name||'Travel Itinerary')}</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f1f5f9;color:#0f172a;padding:1rem;line-height:1.5}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#fafaf9;color:#0f172a;padding:1rem;line-height:1.5}
 .wrap{max-width:800px;margin:0 auto}
-.trip-header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:white;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.trip-header{background:linear-gradient(135deg,#7c2d12,#ea580c);color:white;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
 .trip-name{font-size:1.4rem;font-weight:800}
 .trip-meta{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin-top:.5rem;opacity:.88;font-size:.875rem}
 .card{background:white;border-radius:14px;padding:1.25rem 1.5rem;box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:1rem}
@@ -682,28 +957,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;b
 .notes-card h3{font-size:.9rem;font-weight:700;margin-bottom:.6rem;color:#374151}
 .notes-card ul{list-style:none;display:flex;flex-direction:column;gap:.4rem}
 .notes-card li{font-size:.85rem;padding-left:1rem;position:relative;color:#374151}
-.notes-card li::before{content:'•';position:absolute;left:0;color:#2563eb}
+.notes-card li::before{content:'•';position:absolute;left:0;color:#ea580c}
 .day-card{border-radius:14px;overflow:hidden;margin-bottom:1rem;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-.day-head{background:white;padding:1rem 1.25rem .75rem;display:flex;align-items:flex-start;gap:.75rem;border-bottom:1px solid #f1f5f9}
-.day-badge{background:#2563eb;color:white;font-size:.65rem;font-weight:800;padding:.25rem .5rem;border-radius:6px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
+.day-head{background:white;padding:1rem 1.25rem .75rem;display:flex;align-items:flex-start;gap:.75rem;border-bottom:1px solid #fafaf9}
+.day-badge{background:#ea580c;color:white;font-size:.65rem;font-weight:800;padding:.25rem .5rem;border-radius:6px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;flex-shrink:0}
 .day-info .date{font-weight:700;font-size:.95rem}
-.day-info .loc{color:#2563eb;font-size:.825rem;margin-top:.1rem;font-weight:500}
-.day-info .summ{color:#64748b;font-size:.8rem;margin-top:.2rem}
+.day-info .loc{color:#ea580c;font-size:.825rem;margin-top:.1rem;font-weight:500}
+.day-info .summ{color:#78716c;font-size:.8rem;margin-top:.2rem}
 .day-body{background:white;padding:.75rem 1.25rem 1rem}
 .events{display:flex;flex-direction:column;gap:.6rem}
 .event{display:flex;gap:.6rem;align-items:flex-start}
 .ttime{width:3.25rem;flex-shrink:0;text-align:right;padding-top:.55rem}
 .ttime .t{font-size:.78rem;font-weight:700;color:#374151}
-.ttime .te{font-size:.7rem;color:#94a3b8}
+.ttime .te{font-size:.7rem;color:#a8a29e}
 .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:.65rem}
 .ecard{flex:1;min-width:0;border-radius:0 8px 8px 0;padding:.5rem .75rem;border-left-width:3px;border-left-style:solid}
 .badge{display:inline-flex;align-items:center;gap:.2rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.15rem}
 .etitle{font-weight:700;font-size:.875rem;color:#0f172a}
 .edetails{font-size:.8rem;color:#4b5563;margin-top:.2rem;white-space:pre-wrap;word-break:break-word}
 .eref{font-size:.75rem;color:#6b7280;margin-top:.2rem;font-family:monospace}
-.enotes{font-size:.75rem;color:#0369a1;margin-top:.2rem}
-.no-events{color:#94a3b8;font-size:.82rem;text-align:center;padding:.75rem 0}
-footer{text-align:center;color:#cbd5e1;font-size:.75rem;padding:2rem 0 1.5rem}
+.enotes{font-size:.75rem;color:#c2410c;margin-top:.2rem}
+.no-events{color:#a8a29e;font-size:.82rem;text-align:center;padding:.75rem 0}
+footer{text-align:center;color:#d6d3d1;font-size:.75rem;padding:2rem 0 1.5rem}
 @media(max-width:600px){.ttime{width:2.75rem}}
 @media print{body{background:white}.trip-header{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 </style>
@@ -803,16 +1078,19 @@ function daysBetween(a, b) {
 document.addEventListener('DOMContentLoaded', () => {
   renderSavedList();
   document.getElementById('travel-input').addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') generateItinerary();
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') handleSubmit();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
   });
   // Show active backend in header
-  fetch('/api/config').then(r => r.json()).then(cfg => {
+  fetch('/itinerary/api/config').then(r => r.json()).then(c => {
     const badge = document.getElementById('backend-badge');
-    if (cfg.backend === 'ollama') {
-      badge.textContent = `🖥️ Local model: ${cfg.model}`;
+    if (c.backend === 'ollama') {
+      badge.textContent = `🖥️ Local model: ${c.model}`;
       badge.style.color = '#059669';
     } else {
-      badge.textContent = `☁️ Powered by Claude (${cfg.model})`;
+      badge.textContent = `☁️ Powered by Claude (${c.model})`;
     }
   }).catch(() => {});
 });
