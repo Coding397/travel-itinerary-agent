@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Walking Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f5f0e6;
+      color: #282828;
+      min-height: 100vh;
+    }
+
+    /* ---- Header ---- */
+    header {
+      background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+      color: white;
+      padding: 28px 32px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 16px rgba(255,107,53,.35);
+    }
+    header h1 { font-size: 2rem; letter-spacing: -0.5px; }
+    header p  { font-size: .95rem; opacity: .85; margin-top: 4px; }
+    .collage-btn {
+      background: white;
+      color: #ff6b35;
+      border: none;
+      border-radius: 30px;
+      padding: 10px 22px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      white-space: nowrap;
+    }
+    .collage-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255,107,53,.4); }
+
+    /* ---- Flash messages ---- */
+    .flash-wrap { padding: 12px 32px 0; }
+    .flash {
+      background: #fff4ed;
+      border-left: 4px solid #ff6b35;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: .95rem;
+      color: #c43d00;
+    }
+
+    /* ---- Layout ---- */
+    main { max-width: 1200px; margin: 0 auto; padding: 28px 24px; }
+
+    .layout { display: grid; grid-template-columns: 380px 1fr; gap: 28px; align-items: start; }
+    @media(max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+    /* ---- Log form ---- */
+    .log-card {
+      background: white;
+      border-radius: 18px;
+      padding: 26px 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.07);
+      position: sticky;
+      top: 24px;
+    }
+    .log-card h2 { font-size: 1.25rem; margin-bottom: 18px; color: #ff6b35; }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: .85rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+    input[type=text], input[type=number], input[type=date], textarea {
+      width: 100%;
+      padding: 10px 13px;
+      border: 2px solid #ede8de;
+      border-radius: 10px;
+      font-size: .95rem;
+      font-family: inherit;
+      background: #faf8f4;
+      transition: border-color .15s;
+      color: #282828;
+    }
+    input:focus, textarea:focus { outline: none; border-color: #ff6b35; background: white; }
+    textarea { resize: vertical; min-height: 70px; }
+
+    /* Photo upload */
+    .photo-label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border: 2px dashed #e0d8cb;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #faf8f4;
+      transition: border-color .15s, background .15s;
+    }
+    .photo-label:hover { border-color: #ff6b35; background: #fff4ed; }
+    .photo-label .icon { font-size: 1.6rem; }
+    .photo-label span { font-size: .9rem; color: #888; }
+    input[type=file] { display: none; }
+    #photo-name { font-size: .8rem; color: #ff6b35; margin-top: 5px; min-height: 16px; }
+
+    .submit-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #ff6b35, #f7931e);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity .15s, transform .15s;
+    }
+    .submit-btn:hover { opacity: .9; transform: translateY(-1px); }
+
+    /* ---- Stats strip ---- */
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 14px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+    }
+    .stat-card .val { font-size: 1.75rem; font-weight: 800; color: #ff6b35; }
+    .stat-card .lbl { font-size: .8rem; color: #999; margin-top: 2px; }
+
+    /* ---- Walk cards grid ---- */
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #444;
+      margin-bottom: 14px;
+    }
+    .walks-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .walk-card {
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 3px 12px rgba(0,0,0,.08);
+      transition: transform .15s, box-shadow .15s;
+      position: relative;
+    }
+    .walk-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+
+    .walk-thumb {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      background: #ede8de;
+    }
+    .walk-thumb-placeholder {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, #f0ebe0, #e5ddd0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    .walk-stripe { height: 4px; background: linear-gradient(90deg, #ff6b35, #f7931e); }
+    .walk-body { padding: 12px 13px 14px; }
+    .walk-date { font-size: .78rem; color: #aaa; margin-bottom: 3px; }
+    .walk-km { font-size: 1.35rem; font-weight: 800; color: #ff6b35; }
+    .walk-location { font-size: .85rem; font-weight: 600; color: #333; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .walk-notes { font-size: .78rem; color: #888; margin-top: 5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+    .delete-btn {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: rgba(0,0,0,.45);
+      border: none;
+      border-radius: 50%;
+      width: 26px; height: 26px;
+      color: white;
+      cursor: pointer;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .15s;
+    }
+    .walk-card:hover .delete-btn { opacity: 1; }
+
+    .empty-state {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 40px 20px;
+      color: #bbb;
+      font-size: 1.05rem;
+    }
+    .empty-state .big { font-size: 3rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>&#x1F6B6; Walking Tracker</h1>
+    <p>Log your daily walks, one step at a time.</p>
+  </div>
+  <a href="/collage" class="collage-btn" target="_blank">&#x1F5BC; 30-Day Collage</a>
+</header>
+
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for m in messages %}
+        <div class="flash">{{ m }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>
+  <!-- Stats -->
+  {% set total_km = walks | sum(attribute='km') %}
+  {% set walk_count = walks | length %}
+  {% set avg_km = (total_km / walk_count) if walk_count > 0 else 0 %}
+  <div class="stats">
+    <div class="stat-card">
+      <div class="val">{{ walk_count }}</div>
+      <div class="lbl">Total walks</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">{{ "%.1f"|format(total_km) }}</div>
+      <div class="lbl">km total</div>
+    </div>
+    <div class="stat-card">
+      <div class="val">{{ "%.1f"|format(avg_km) }}</div>
+      <div class="lbl">avg km / walk</div>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Log form -->
+    <div class="log-card">
+      <h2>&#x270F;&#xFE0F; Log a walk</h2>
+      <form method="POST" action="/log" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="walk_date">Date</label>
+          <input type="date" id="walk_date" name="walk_date" value="{{ today }}" required />
+        </div>
+        <div class="form-group">
+          <label for="km">Distance (km)</label>
+          <input type="number" id="km" name="km" min="0" step="0.01" placeholder="e.g. 5.4" required />
+        </div>
+        <div class="form-group">
+          <label for="location">Where did you walk?</label>
+          <input type="text" id="location" name="location" placeholder="e.g. Central Park, NYC" required />
+        </div>
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" name="notes" placeholder="How was the walk? Anything interesting?"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Photo</label>
+          <label class="photo-label" for="photo">
+            <span class="icon">&#x1F4F7;</span>
+            <span>Tap to add a photo</span>
+          </label>
+          <input type="file" id="photo" name="photo" accept="image/*" onchange="showName(this)" />
+          <div id="photo-name"></div>
+        </div>
+        <button type="submit" class="submit-btn">&#x1F4AA; Log Walk</button>
+      </form>
+    </div>
+
+    <!-- Walk history -->
+    <div>
+      <div class="section-title">Your walks ({{ walk_count }})</div>
+      <div class="walks-grid">
+        {% for walk in walks %}
+        <div class="walk-card">
+          {% if walk.photo_path %}
+            <img class="walk-thumb" src="/photo/{{ walk.photo_path }}" alt="Walk photo" loading="lazy" />
+          {% else %}
+            <div class="walk-thumb-placeholder">&#x1F6B6;</div>
+          {% endif %}
+          <div class="walk-stripe"></div>
+          <div class="walk-body">
+            <div class="walk-date">{{ walk.walk_date }}</div>
+            <div class="walk-km">{{ "%.2f"|format(walk.km) }} km</div>
+            <div class="walk-location" title="{{ walk.location }}">{{ walk.location }}</div>
+            {% if walk.notes %}
+              <div class="walk-notes">{{ walk.notes }}</div>
+            {% endif %}
+          </div>
+          <form method="POST" action="/delete/{{ walk.id }}" onsubmit="return confirm('Delete this walk?')">
+            <button type="submit" class="delete-btn" title="Delete">&#x2715;</button>
+          </form>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="big">&#x1F6B6;</div>
+          No walks yet — log your first one!
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function showName(input) {
+  const el = document.getElementById('photo-name');
+  el.textContent = input.files.length ? input.files[0].name : '';
+}
+</script>
+</body>
+</html>
