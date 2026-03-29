@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: walking-tracker
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn walking_tracker:app
+    disk:
+      name: walks-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: DATA_DIR
+        value: /data
+      - key: SECRET_KEY
+        generateValue: true

@@ -287,8 +287,8 @@
       <div class="walks-grid">
         {% for walk in walks %}
         <div class="walk-card">
-          {% if walk.photo_path %}
-            <img class="walk-thumb" src="/photo/{{ walk.photo_path }}" alt="Walk photo" loading="lazy" />
+          {% if walk.photo_mime %}
+            <img class="walk-thumb" src="/photo/{{ walk.id }}" alt="Walk photo" loading="lazy" />
           {% else %}
             <div class="walk-thumb-placeholder">&#x1F6B6;</div>
           {% endif %}
