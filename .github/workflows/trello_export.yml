@@ -1,0 +1,32 @@
+name: Export Trello to Markdown
+
+on:
+  workflow_dispatch:
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install requests python-dotenv
+
+      - name: Export Trello board
+        env:
+          TRELLO_API_KEY:  ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN:    ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+        run: python trello_to_markdown.py
+
+      - name: Commit notes
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add conference_notes.md
+          git diff --cached --quiet || git commit -m "Update conference notes from Trello"
+          git push
