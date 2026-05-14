@@ -28,10 +28,17 @@ lines = ["# Conference Notes\n"]
 
 for lst in lists:
     lines.append(f"\n## {lst['name']}\n")
-    for card in get(f"/lists/{lst['id']}/cards"):
+    for card in get(f"/lists/{lst['id']}/cards?actions=commentCard"):
         lines.append(f"\n### {card['name']}\n")
         if card.get("desc"):
             lines.append(card["desc"] + "\n")
+        comments = card.get("actions", [])
+        if comments:
+            lines.append("\n**Comments:**\n")
+            for c in reversed(comments):  # oldest first
+                author = c["memberCreator"]["fullName"]
+                text = c["data"]["text"]
+                lines.append(f"- **{author}**: {text}\n")
 
 output = "conference_notes.md"
 with open(output, "w") as f:
